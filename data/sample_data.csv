@@ -1,0 +1,6 @@
+id,name,address,pincode,pan,gstin,last_activity_months
+1,ABC Pvt Ltd,MG Road Bangalore,560001,,29ABCDE1234F1Z5,2
+2,ABC Private Limited,MG Rd Bengaluru,560001,,29ABCDE1234F1Z5,3
+3,XYZ Industries,Whitefield Bangalore,560066,ABCDE1234F,,18
+4,XYZ Ind,Whitefield BLR,560066,ABCDE1234F,,20
+5,Fresh Foods,Indiranagar Bangalore,560038,,,30
