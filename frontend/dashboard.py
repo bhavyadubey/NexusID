@@ -72,94 +72,112 @@ menu = st.sidebar.radio(
 # ---------------------------
 # UBID MATCHING
 # ---------------------------
-if menu == "UBID Matching":
-    st.markdown('<div class="section-title">Entity Matching & UBID Generation</div>', unsafe_allow_html=True)
+if menu == "Reviewer Console":
+    st.markdown('<div class="section-title"> Human Review & Decision Console</div>', unsafe_allow_html=True)
 
-    # INPUT SECTION
-    st.markdown("### 🔎 Select Records to Match")
+    st.markdown("### Pending Cases for Review")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        id1 = st.number_input("Record 1 ID", min_value=1, value=1)
-    with col2:
-        id2 = st.number_input("Record 2 ID", min_value=1, value=2)
+    # Dummy review queue (replace later with API)
+    review_cases = [
+        {"id": 101, "id1": 1, "id2": 2, "confidence": 0.72, "status": "REVIEW"},
+        {"id": 102, "id1": 3, "id2": 4, "confidence": 0.48, "status": "REVIEW"},
+        {"id": 103, "id1": 5, "id2": 6, "confidence": 0.81, "status": "REVIEW"},
+    ]
+
+    selected_case = st.selectbox(
+        "Select Case ID",
+        [case["id"] for case in review_cases]
+    )
+
+    case_data = next(c for c in review_cases if c["id"] == selected_case)
 
     st.markdown("---")
 
-    # ACTION BUTTON
-    if st.button(" Run AI Matching Engine"):
+    # CASE SUMMARY
+    st.markdown("### Case Summary")
+    col1, col2, col3 = st.columns(3)
 
-        with st.spinner("Running AI-powered entity resolution..."):
+    col1.metric("Record 1", case_data["id1"])
+    col2.metric("Record 2", case_data["id2"])
+    col3.metric("AI Confidence", f"{case_data['confidence']:.2f}")
 
-            try:
-                response = requests.get(f"{API_URL}/match?id1={id1}&id2={id2}")
+    st.progress(case_data["confidence"])
 
-                if response.status_code == 200:
-                    data = response.json()
+    st.markdown("---")
 
-                    confidence = float(data.get("confidence", 0))
-                    decision = data.get("decision", "UNKNOWN")
-                    explanation = data.get("explanation", {})
+    # FETCH MATCH DATA FROM API
+    try:
+        response = requests.get(
+            f"{API_URL}/match?id1={case_data['id1']}&id2={case_data['id2']}"
+        )
 
-                    # RESULT CARD
-                    st.markdown('<div class="card">', unsafe_allow_html=True)
-                    st.subheader(" Matching Result")
+        if response.status_code == 200:
+            data = response.json()
+            explanation = data.get("explanation", {})
 
-                    # CONFIDENCE SCORE VISUAL
-                    st.markdown("#### Confidence Score")
-                    st.progress(confidence)
+            # SIDE-BY-SIDE RECORD VIEW
+            st.markdown("### Record Comparison")
 
-                    if confidence >= 0.85:
-                        st.success(f"High Confidence: {confidence:.2f}")
-                    elif confidence >= 0.5:
-                        st.warning(f"Medium Confidence: {confidence:.2f}")
-                    else:
-                        st.error(f"Low Confidence: {confidence:.2f}")
+            col1, col2 = st.columns(2)
 
-                    st.markdown("---")
+            with col1:
+                st.markdown("#### Record 1")
+                st.json({
+                    "Name": "Ramesh Kumar",
+                    "DOB": "1990-01-01",
+                    "Address": "Delhi",
+                    "Phone": "98XXXXXX12"
+                })
 
-                    # DECISION DISPLAY
-                    st.markdown("#### AI Decision")
+            with col2:
+                st.markdown("#### Record 2")
+                st.json({
+                    "Name": "Ramesh K.",
+                    "DOB": "1990-01-01",
+                    "Address": "New Delhi",
+                    "Phone": "98XXXXXX12"
+                })
 
-                    if decision == "AUTO-MERGE":
-                        st.markdown(
-                            f'<div style="background-color:#0f5132;padding:10px;border-radius:8px;color:white;"><b>{decision}</b> → Records automatically merged</div>',
-                            unsafe_allow_html=True
-                        )
+            st.markdown("---")
 
-                    elif decision == "REVIEW":
-                        st.markdown(
-                            f'<div style="background-color:#664d03;padding:10px;border-radius:8px;color:white;"><b>{decision}</b> → Requires manual verification</div>',
-                            unsafe_allow_html=True
-                        )
-                        st.warning(" This case has been flagged for human review.")
+            # AI EXPLANATION PANEL
+            st.markdown("### AI Explanation")
 
-                    else:
-                        st.markdown(
-                            f'<div style="background-color:#842029;padding:10px;border-radius:8px;color:white;"><b>{decision}</b> → Records do NOT match</div>',
-                            unsafe_allow_html=True
-                        )
+            if isinstance(explanation, dict):
+                for key, value in explanation.items():
+                    st.markdown(f"**{key.capitalize()} Match:** {value}")
+            else:
+                st.write(explanation)
 
-                    st.markdown("---")
+            st.markdown("---")
 
-                    # EXPLANATION SECTION
-                    st.markdown("#### 🔍 Explainability (Why this decision?)")
+            # REVIEW ACTION PANEL
+            st.markdown("### Reviewer Decision")
 
-                    if isinstance(explanation, dict):
-                        for key, value in explanation.items():
-                            st.markdown(f"**{key.capitalize()} Match:** {value}")
-                    else:
-                        st.write(explanation)
+            decision = st.radio(
+                "Select Final Decision",
+                ["Approve Merge", "Reject Match", "Escalate"]
+            )
 
-                    st.markdown('</div>', unsafe_allow_html=True)
+            comments = st.text_area("Reviewer Comments")
 
-                else:
-                    st.error(" API Error: Unable to fetch results")
+            if st.button(" Submit Decision"):
+                st.success("Decision submitted successfully!")
 
-            except Exception as e:
-                st.error(" Backend not running or connection failed")
-                st.info(" Make sure FastAPI server is running on http://127.0.0.1:8000")
-                st.code(str(e))
+                st.markdown("### Audit Log Entry")
+                st.write({
+                    "case_id": selected_case,
+                    "final_decision": decision,
+                    "confidence": case_data["confidence"],
+                    "reviewer_comments": comments
+                })
+
+        else:
+            st.error("Failed to fetch match details")
+
+    except Exception as e:
+        st.error("Backend not running")
+        st.code(str(e))
 
 # ---------------------------
 # ACTIVITY STATUS
