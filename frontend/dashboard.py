@@ -72,112 +72,66 @@ menu = st.sidebar.radio(
 # ---------------------------
 # UBID MATCHING
 # ---------------------------
-if menu == "Reviewer Console":
-    st.markdown('<div class="section-title"> Human Review & Decision Console</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Entity Matching & UBID Generation</div>', unsafe_allow_html=True)
 
-    st.markdown("### Pending Cases for Review")
+    col1, col2 = st.columns(2)
+    with col1:
+        id1 = st.number_input("Record 1 ID", min_value=1, value=1)
+    with col2:
+        id2 = st.number_input("Record 2 ID", min_value=1, value=2)
 
-    # Dummy review queue (replace later with API)
-    review_cases = [
-        {"id": 101, "id1": 1, "id2": 2, "confidence": 0.72, "status": "REVIEW"},
-        {"id": 102, "id1": 3, "id2": 4, "confidence": 0.48, "status": "REVIEW"},
-        {"id": 103, "id1": 5, "id2": 6, "confidence": 0.81, "status": "REVIEW"},
-    ]
+    if st.button(" Run Matching"):
+        try:
+            response = requests.get(f"{API_URL}/match?id1={id1}&id2={id2}")
 
-    selected_case = st.selectbox(
-        "Select Case ID",
-        [case["id"] for case in review_cases]
-    )
+            if response.status_code == 200:
+                data = response.json()
 
-    case_data = next(c for c in review_cases if c["id"] == selected_case)
+                confidence = data.get("confidence", 0)
+                decision = data.get("decision", "UNKNOWN")
+                explanation = data.get("explanation", {})
 
-    st.markdown("---")
+                st.markdown('<div class="card">', unsafe_allow_html=True)
+                st.subheader(" Matching Result")
 
-    # CASE SUMMARY
-    st.markdown("### Case Summary")
-    col1, col2, col3 = st.columns(3)
+                # Confidence Visualization
+                st.metric("Confidence Score", f"{confidence:.2f}")
+                st.progress(int(confidence * 100))
 
-    col1.metric("Record 1", case_data["id1"])
-    col2.metric("Record 2", case_data["id2"])
-    col3.metric("AI Confidence", f"{case_data['confidence']:.2f}")
+                # Decision Badge
+                if decision == "AUTO-MERGE":
+                    st.markdown(f'<p class="success">Decision: {decision}</p>', unsafe_allow_html=True)
+                elif decision == "REVIEW":
+                    st.markdown(f'<p class="warning">Decision: {decision}</p>', unsafe_allow_html=True)
+                    st.warning(" Requires human validation")
+                else:
+                    st.markdown(f'<p class="error">Decision: {decision}</p>', unsafe_allow_html=True)
 
-    st.progress(case_data["confidence"])
+                st.divider()
 
-    st.markdown("---")
+                # Explanation Panel (Readable UI instead of raw JSON)
+                st.markdown("### AI Explanation Breakdown")
 
-    # FETCH MATCH DATA FROM API
-    try:
-        response = requests.get(
-            f"{API_URL}/match?id1={case_data['id1']}&id2={case_data['id2']}"
-        )
+                colA, colB = st.columns(2)
 
-        if response.status_code == 200:
-            data = response.json()
-            explanation = data.get("explanation", {})
+                for i, (key, value) in enumerate(explanation.items()):
+                    label = key.replace("_", " ").title()
 
-            # SIDE-BY-SIDE RECORD VIEW
-            st.markdown("### Record Comparison")
+                    if i % 2 == 0:
+                        with colA:
+                            st.markdown(f"**{label}**: {value}")
+                    else:
+                        with colB:
+                            st.markdown(f"**{label}**: {value}")
 
-            col1, col2 = st.columns(2)
+                st.markdown('</div>', unsafe_allow_html=True)
 
-            with col1:
-                st.markdown("#### Record 1")
-                st.json({
-                    "Name": "Ramesh Kumar",
-                    "DOB": "1990-01-01",
-                    "Address": "Delhi",
-                    "Phone": "98XXXXXX12"
-                })
-
-            with col2:
-                st.markdown("#### Record 2")
-                st.json({
-                    "Name": "Ramesh K.",
-                    "DOB": "1990-01-01",
-                    "Address": "New Delhi",
-                    "Phone": "98XXXXXX12"
-                })
-
-            st.markdown("---")
-
-            # AI EXPLANATION PANEL
-            st.markdown("### AI Explanation")
-
-            if isinstance(explanation, dict):
-                for key, value in explanation.items():
-                    st.markdown(f"**{key.capitalize()} Match:** {value}")
             else:
-                st.write(explanation)
+                st.error(" API Error: Unable to fetch results")
 
-            st.markdown("---")
-
-            # REVIEW ACTION PANEL
-            st.markdown("### Reviewer Decision")
-
-            decision = st.radio(
-                "Select Final Decision",
-                ["Approve Merge", "Reject Match", "Escalate"]
-            )
-
-            comments = st.text_area("Reviewer Comments")
-
-            if st.button(" Submit Decision"):
-                st.success("Decision submitted successfully!")
-
-                st.markdown("### Audit Log Entry")
-                st.write({
-                    "case_id": selected_case,
-                    "final_decision": decision,
-                    "confidence": case_data["confidence"],
-                    "reviewer_comments": comments
-                })
-
-        else:
-            st.error("Failed to fetch match details")
-
-    except Exception as e:
-        st.error("Backend not running")
-        st.code(str(e))
+        except Exception as e:
+            st.error(" Backend not running. Start FastAPI first.")
+            st.code(str(e))
 
 # ---------------------------
 # ACTIVITY STATUS
