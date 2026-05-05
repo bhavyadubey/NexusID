@@ -13,23 +13,28 @@ def home():
 
 @app.get("/match")
 def match_records(id1: int, id2: int):
-    r1 = data[data['id'] == id1].iloc[0]
-    r2 = data[data['id'] == id2].iloc[0]
+    # Dummy logic (replace later with ML)
+    
+    confidence = 0.87 if id1 != id2 else 1.0
 
-    result = compute_similarity(r1, r2)
-
-    decision = "REJECT"
-    if result["confidence"] > 0.9:
+    if confidence > 0.85:
         decision = "AUTO-MERGE"
-    elif result["confidence"] > 0.6:
+    elif confidence > 0.5:
         decision = "REVIEW"
+    else:
+        decision = "REJECT"
+
+    explanation = {
+        "name_match": "High",
+        "dob_match": "Exact",
+        "address_match": "Partial",
+        "phone_match": "Exact"
+    }
 
     return {
-        "record_1": r1.to_dict(),
-        "record_2": r2.to_dict(),
-        "confidence": result["confidence"],
+        "confidence": confidence,
         "decision": decision,
-        "explanation": result["explanation"]
+        "explanation": explanation
     }
 
 @app.get("/activity/{id}")
