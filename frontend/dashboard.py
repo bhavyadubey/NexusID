@@ -70,19 +70,36 @@ menu = st.sidebar.radio(
 )
 
 # ---------------------------
-# UBID MATCHING
+# UBID MATCHING (FINAL VERSION)
 # ---------------------------
+if menu == " UBID Matching":
+
     st.markdown('<div class="section-title">Entity Matching & UBID Generation</div>', unsafe_allow_html=True)
 
+    # Input Section
     col1, col2 = st.columns(2)
     with col1:
         id1 = st.number_input("Record 1 ID", min_value=1, value=1)
     with col2:
         id2 = st.number_input("Record 2 ID", min_value=1, value=2)
 
+    # Button trigger
     if st.button(" Run Matching"):
+        st.session_state["run_match"] = True
+        st.session_state["id1"] = id1
+        st.session_state["id2"] = id2
+
+    # Persist results (prevents disappearing UI)
+    if st.session_state.get("run_match"):
+
         try:
-            response = requests.get(f"{API_URL}/match?id1={id1}&id2={id2}")
+            response = requests.get(
+                f"{API_URL}/match",
+                params={
+                    "id1": st.session_state["id1"],
+                    "id2": st.session_state["id2"]
+                }
+            )
 
             if response.status_code == 200:
                 data = response.json()
@@ -91,14 +108,17 @@ menu = st.sidebar.radio(
                 decision = data.get("decision", "UNKNOWN")
                 explanation = data.get("explanation", {})
 
+                # ---------------------------
+                # RESULT CARD
+                # ---------------------------
                 st.markdown('<div class="card">', unsafe_allow_html=True)
-                st.subheader(" Matching Result")
+                st.subheader("🔍 Matching Result")
 
-                # Confidence Visualization
+                # Confidence
                 st.metric("Confidence Score", f"{confidence:.2f}")
-                st.progress(int(confidence * 100))
+                st.progress(confidence)
 
-                # Decision Badge
+                # Decision
                 if decision == "AUTO-MERGE":
                     st.markdown(f'<p class="success">Decision: {decision}</p>', unsafe_allow_html=True)
                 elif decision == "REVIEW":
@@ -107,9 +127,18 @@ menu = st.sidebar.radio(
                 else:
                     st.markdown(f'<p class="error">Decision: {decision}</p>', unsafe_allow_html=True)
 
+                # ---------------------------
+                # UBID GENERATION (KEY FEATURE)
+                # ---------------------------
+                if decision == "AUTO-MERGE":
+                    ubid = f"UBID-{st.session_state['id1']}{st.session_state['id2']}{int(confidence*100)}"
+                    st.success(f" Generated UBID: {ubid}")
+
                 st.divider()
 
-                # Explanation Panel (Readable UI instead of raw JSON)
+                # ---------------------------
+                # EXPLANATION PANEL
+                # ---------------------------
                 st.markdown("### AI Explanation Breakdown")
 
                 colA, colB = st.columns(2)
