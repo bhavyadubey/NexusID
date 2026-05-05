@@ -72,8 +72,11 @@ menu = st.sidebar.radio(
 # ---------------------------
 # UBID MATCHING
 # ---------------------------
-if menu == " UBID Matching":
+if menu == "UBID Matching":
     st.markdown('<div class="section-title">Entity Matching & UBID Generation</div>', unsafe_allow_html=True)
+
+    # INPUT SECTION
+    st.markdown("### 🔎 Select Records to Match")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -81,29 +84,82 @@ if menu == " UBID Matching":
     with col2:
         id2 = st.number_input("Record 2 ID", min_value=1, value=2)
 
-    if st.button("Run Matching"):
-        response = requests.get(f"{API_URL}/match?id1={id1}&id2={id2}")
+    st.markdown("---")
 
-        if response.status_code == 200:
-            data = response.json()
+    # ACTION BUTTON
+    if st.button(" Run AI Matching Engine"):
 
-            st.markdown('<div class="card">', unsafe_allow_html=True)
-            st.subheader("Matching Result")
+        with st.spinner("Running AI-powered entity resolution..."):
 
-            st.write(f"**Confidence Score:** {data['confidence']}")
+            try:
+                response = requests.get(f"{API_URL}/match?id1={id1}&id2={id2}")
 
-            decision = data["decision"]
-            if decision == "AUTO-MERGE":
-                st.markdown(f'<p class="success">Decision: {decision}</p>', unsafe_allow_html=True)
-            elif decision == "REVIEW":
-                st.markdown(f'<p class="warning">Decision: {decision}</p>', unsafe_allow_html=True)
-                st.warning("Requires human validation")
-            else:
-                st.markdown(f'<p class="error">Decision: {decision}</p>', unsafe_allow_html=True)
+                if response.status_code == 200:
+                    data = response.json()
 
-            st.markdown("**Explanation:**")
-            st.json(data["explanation"])
-            st.markdown('</div>', unsafe_allow_html=True)
+                    confidence = float(data.get("confidence", 0))
+                    decision = data.get("decision", "UNKNOWN")
+                    explanation = data.get("explanation", {})
+
+                    # RESULT CARD
+                    st.markdown('<div class="card">', unsafe_allow_html=True)
+                    st.subheader(" Matching Result")
+
+                    # CONFIDENCE SCORE VISUAL
+                    st.markdown("#### Confidence Score")
+                    st.progress(confidence)
+
+                    if confidence >= 0.85:
+                        st.success(f"High Confidence: {confidence:.2f}")
+                    elif confidence >= 0.5:
+                        st.warning(f"Medium Confidence: {confidence:.2f}")
+                    else:
+                        st.error(f"Low Confidence: {confidence:.2f}")
+
+                    st.markdown("---")
+
+                    # DECISION DISPLAY
+                    st.markdown("#### AI Decision")
+
+                    if decision == "AUTO-MERGE":
+                        st.markdown(
+                            f'<div style="background-color:#0f5132;padding:10px;border-radius:8px;color:white;"><b>{decision}</b> → Records automatically merged</div>',
+                            unsafe_allow_html=True
+                        )
+
+                    elif decision == "REVIEW":
+                        st.markdown(
+                            f'<div style="background-color:#664d03;padding:10px;border-radius:8px;color:white;"><b>{decision}</b> → Requires manual verification</div>',
+                            unsafe_allow_html=True
+                        )
+                        st.warning(" This case has been flagged for human review.")
+
+                    else:
+                        st.markdown(
+                            f'<div style="background-color:#842029;padding:10px;border-radius:8px;color:white;"><b>{decision}</b> → Records do NOT match</div>',
+                            unsafe_allow_html=True
+                        )
+
+                    st.markdown("---")
+
+                    # EXPLANATION SECTION
+                    st.markdown("#### 🔍 Explainability (Why this decision?)")
+
+                    if isinstance(explanation, dict):
+                        for key, value in explanation.items():
+                            st.markdown(f"**{key.capitalize()} Match:** {value}")
+                    else:
+                        st.write(explanation)
+
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+                else:
+                    st.error(" API Error: Unable to fetch results")
+
+            except Exception as e:
+                st.error(" Backend not running or connection failed")
+                st.info(" Make sure FastAPI server is running on http://127.0.0.1:8000")
+                st.code(str(e))
 
 # ---------------------------
 # ACTIVITY STATUS
