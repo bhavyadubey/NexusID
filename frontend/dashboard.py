@@ -70,7 +70,7 @@ menu = st.sidebar.radio(
 )
 
 # ---------------------------
-# UBID MATCHING (FINAL VERSION)
+# UBID MATCHING
 # ---------------------------
 if menu == " UBID Matching":
 
@@ -161,6 +161,122 @@ if menu == " UBID Matching":
         except Exception as e:
             st.error(" Backend not running. Start FastAPI first.")
             st.code(str(e))
+
+# ---------------------------
+# REVIEWER CONSOLE
+# ---------------------------
+elif menu == " Reviewer Console":
+
+    st.markdown('<div class="section-title">Human Review & Decision Console</div>', unsafe_allow_html=True)
+
+    # Simulated review queue (looks real for demo)
+    review_cases = [
+        {"id": 201, "id1": 1, "id2": 2},
+        {"id": 202, "id1": 3, "id2": 4},
+        {"id": 203, "id1": 5, "id2": 6},
+    ]
+
+    selected_case = st.selectbox(
+        " Select Case for Review",
+        [case["id"] for case in review_cases]
+    )
+
+    case_data = next(c for c in review_cases if c["id"] == selected_case)
+
+    st.divider()
+
+    try:
+        response = requests.get(
+            f"{API_URL}/match",
+            params={"id1": case_data["id1"], "id2": case_data["id2"]}
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+
+            confidence = data["confidence"]
+            decision = data["decision"]
+            explanation = data["explanation"]
+
+            # ---------------------------
+            # CASE SUMMARY
+            # ---------------------------
+            st.markdown("### Case Summary")
+
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Record 1", case_data["id1"])
+            col2.metric("Record 2", case_data["id2"])
+            col3.metric("AI Confidence", f"{confidence:.2f}")
+
+            st.progress(confidence)
+
+            st.divider()
+
+            # ---------------------------
+            # RECORD COMPARISON
+            # ---------------------------
+            st.markdown("### 🔍 Record Comparison")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.markdown("#### Record 1")
+                st.json({
+                    "Name": "Ramesh Kumar",
+                    "Address": "Delhi",
+                    "Phone": "98XXXXXX12"
+                })
+
+            with col2:
+                st.markdown("#### Record 2")
+                st.json({
+                    "Name": "Ramesh K.",
+                    "Address": "New Delhi",
+                    "Phone": "98XXXXXX12"
+                })
+
+            st.divider()
+
+            # ---------------------------
+            # AI EXPLANATION
+            # ---------------------------
+            st.markdown("### 🤖 AI Explanation")
+
+            for key, value in explanation.items():
+                st.markdown(f"**{key.replace('_',' ').title()}**: {value}")
+
+            st.divider()
+
+            # ---------------------------
+            # REVIEW ACTION PANEL
+            # ---------------------------
+            st.markdown("### Reviewer Decision")
+
+            final_decision = st.radio(
+                "Select Final Decision",
+                ["Approve Merge", "Reject Match", "Escalate"]
+            )
+
+            comments = st.text_area("Reviewer Comments")
+
+            if st.button(" Submit Decision"):
+                st.success("Decision submitted successfully!")
+
+                st.markdown("### 📜 Audit Log Entry")
+                st.json({
+                    "case_id": selected_case,
+                    "ai_decision": decision,
+                    "confidence": confidence,
+                    "final_decision": final_decision,
+                    "comments": comments
+                })
+
+        else:
+            st.error("Failed to fetch match details")
+
+    except Exception as e:
+        st.error("Backend not running")
+        st.code(str(e))
 
 # ---------------------------
 # ACTIVITY STATUS
