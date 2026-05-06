@@ -1,66 +1,46 @@
 from fastapi import FastAPI
-import pandas as pd
-from matching import compute_similarity
-from activity import classify_activity
+from fastapi.middleware.cors import CORSMiddleware
+
+from matching import match_records
+from activity import get_activity_status, query_by_pincode
 
 app = FastAPI()
 
-data = pd.read_csv("../data/sample_data.csv")
+# ---------------------------
+# CORS
+# ---------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+# ---------------------------
+# ROOT
+# ---------------------------
 @app.get("/")
-def home():
+def root():
     return {"message": "NexusID API Running"}
 
+# ---------------------------
+# MATCH ENDPOINT
+# ---------------------------
 @app.get("/match")
-def match_records(id1: int, id2: int):
-    # Dummy logic (replace later with ML)
-    
-    confidence = 0.87 if id1 != id2 else 1.0
+def match(id1: int, id2: int):
+    return match_records(id1, id2)
 
-    if confidence > 0.85:
-        decision = "AUTO-MERGE"
-    elif confidence > 0.5:
-        decision = "REVIEW"
-    else:
-        decision = "REJECT"
-
-    explanation = {
-        "name_match": "High",
-        "dob_match": "Exact",
-        "address_match": "Partial",
-        "phone_match": "Exact"
-    }
-
-    return {
-        "confidence": confidence,
-        "decision": decision,
-        "explanation": explanation
-    }
-
+# ---------------------------
+# ACTIVITY ENDPOINT
+# ---------------------------
 @app.get("/activity/{id}")
-def activity_status(id: int):
-    record = data[data['id'] == id].iloc[0]
-    status = classify_activity(record['last_activity_months'])
+def activity(id: int):
+    return get_activity_status(id)
 
-    return {
-        "business": record['name'],
-        "status": status,
-        "last_activity_months": record['last_activity_months'],
-        "explanation": f"No activity for {record['last_activity_months']} months"
-    }
-
+# ---------------------------
+# QUERY ENDPOINT
+# ---------------------------
 @app.get("/query")
 def query(pincode: int):
-    filtered = data[data['pincode'] == pincode]
-
-    result = []
-    for _, row in filtered.iterrows():
-        status = classify_activity(row['last_activity_months'])
-        if status == "Active" and row['last_activity_months'] > 12:
-            result.append({
-                "name": row['name'],
-                "status": status,
-                "issue": "No recent inspection"
-            })
-
-    return {"results": result}
+    return query_by_pincode(pincode)
