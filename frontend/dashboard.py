@@ -287,25 +287,37 @@ elif menu == " Activity Status":
     record_id = st.number_input("Enter Business ID", min_value=1, value=1)
 
     if st.button("Check Activity"):
-        response = requests.get(f"{API_URL}/activity/{record_id}")
+        try:
+            response = requests.get(f"{API_URL}/activity/{record_id}")
 
-        if response.status_code == 200:
-            data = response.json()
+            if response.status_code == 200:
+                data = response.json()
 
-            st.markdown('<div class="card">', unsafe_allow_html=True)
-            st.subheader(f" {data['business']}")
+                st.markdown('<div class="card">', unsafe_allow_html=True)
+                st.subheader(f"{data['business']}")
 
-            status = data["status"]
+                status = data.get("status", "Unknown")
+                explanation = data.get("explanation", "")
 
-            if status == "Active":
-                st.markdown(f'<p class="success">Status: {status}</p>', unsafe_allow_html=True)
-            elif status == "Dormant":
-                st.markdown(f'<p class="warning">Status: {status}</p>', unsafe_allow_html=True)
+                # STATUS DISPLAY (clean UI)
+                if status == "Active":
+                    st.success(f"Status: {status}")
+                elif status == "Dormant":
+                    st.warning(f"Status: {status}")
+                else:
+                    st.error(f"Status: {status}")
+
+                st.markdown("### Explanation")
+                st.info(explanation)
+
+                st.markdown('</div>', unsafe_allow_html=True)
+
             else:
-                st.markdown(f'<p class="error">Status: {status}</p>', unsafe_allow_html=True)
+                st.error(f"API Error: {response.status_code}")
 
-            st.write(f"**Explanation:** {data['explanation']}")
-            st.markdown('</div>', unsafe_allow_html=True)
+        except Exception as e:
+            st.error("Backend not running. Start FastAPI first.")
+            st.code(str(e))
 
 # ---------------------------
 # QUERY ENGINE
@@ -316,21 +328,40 @@ elif menu == " Query Engine":
     pincode = st.number_input("Enter Pincode", value=560001)
 
     if st.button("Run Query"):
-        response = requests.get(f"{API_URL}/query?pincode={pincode}")
+        try:
+            response = requests.get(f"{API_URL}/query?pincode={pincode}")
 
-        if response.status_code == 200:
-            data = response.json()
+            if response.status_code == 200:
+                data = response.json()
 
-            st.markdown('<div class="card">', unsafe_allow_html=True)
-            st.subheader("Query Results")
+                st.markdown('<div class="card">', unsafe_allow_html=True)
+                st.subheader("Query Results")
 
-            if len(data["results"]) == 0:
-                st.info("No matching records found")
+                results = data.get("results", [])
+
+                if len(results) == 0:
+                    st.info("No matching businesses found")
+                else:
+                    for r in results:
+                        st.markdown(f"### {r['name']}")
+
+                        status = r.get("status", "Unknown")
+
+                        if status == "Active":
+                            st.success(f"Status: {status}")
+                        elif status == "Dormant":
+                            st.warning(f"Status: {status}")
+                        else:
+                            st.error(f"Status: {status}")
+
+                        st.markdown(f"**Issue:** {r.get('issue', 'N/A')}")
+                        st.divider()
+
+                st.markdown('</div>', unsafe_allow_html=True)
+
             else:
-                for r in data["results"]:
-                    st.markdown(f"** {r['name']}**")
-                    st.write(f"Status: {r['status']}")
-                    st.markdown(f'<p class="warning">Issue: {r["issue"]}</p>', unsafe_allow_html=True)
-                    st.divider()
+                st.error(f"API Error: {response.status_code}")
 
-            st.markdown('</div>', unsafe_allow_html=True)
+        except Exception as e:
+            st.error("Backend not running. Start FastAPI first.")
+            st.code(str(e))
