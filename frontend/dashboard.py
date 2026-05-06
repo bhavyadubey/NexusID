@@ -13,54 +13,68 @@ st.set_page_config(
 )
 
 # ---------------------------
-# CUSTOM CSS
+# CSS
 # ---------------------------
 st.markdown("""
-    <style>
-        body {
-            background-color: #F5F7FA;
-        }
-        .main-title {
-            font-size: 32px;
-            font-weight: 700;
-            color: #0B3C5D;
-        }
-        .section-title {
-            font-size: 22px;
-            font-weight: 600;
-            color: #0B3C5D;
-            margin-top: 20px;
-        }
-        .card {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 2px 6px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-        }
-    </style>
+<style>
+body { background-color: #F4F6F9; }
+
+.main-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #0A2A43;
+}
+
+.section-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0A2A43;
+    border-left: 5px solid #1F4E79;
+    padding-left: 10px;
+    margin-top: 20px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #E1E5EA;
+    box-shadow: 0px 3px 8px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+}
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.badge-success { background:#E8F8F0; color:#1E8449; }
+.badge-warning { background:#FEF5E7; color:#B9770E; }
+.badge-danger { background:#FDEDEC; color:#C0392B; }
+</style>
 """, unsafe_allow_html=True)
 
 # ---------------------------
 # HEADER
 # ---------------------------
-st.markdown('<div class="main-title">🏛️ NexusID Governance Dashboard</div>', unsafe_allow_html=True)
-st.caption("Unified Business Identifier & Activity Intelligence System")
+st.markdown('<div class="main-title">🏛️ NexusID – National Business Identity System</div>', unsafe_allow_html=True)
+st.caption("AI-powered Unified Business Identifier & Activity Intelligence Platform")
 
 st.divider()
 
 # ---------------------------
-# SIDEBAR NAVIGATION
+# SIDEBAR
 # ---------------------------
 menu = st.sidebar.radio(
     "Navigation",
-    [" UBID Matching", " Reviewer Console", " Activity Status", " Query Engine"]
+    ["UBID Matching", "Reviewer Console", "Activity Status", "Query Engine"]
 )
 
 # ---------------------------
 # UBID MATCHING
 # ---------------------------
-if menu == " UBID Matching":
+if menu == "UBID Matching":
 
     st.markdown('<div class="section-title">Entity Matching & UBID Generation</div>', unsafe_allow_html=True)
 
@@ -70,7 +84,7 @@ if menu == " UBID Matching":
     with col2:
         id2 = st.number_input("Record 2 ID", min_value=1, value=2)
 
-    if st.button(" Run Matching"):
+    if st.button("Run Matching"):
         st.session_state["run_match"] = True
         st.session_state["id1"] = id1
         st.session_state["id2"] = id2
@@ -78,13 +92,11 @@ if menu == " UBID Matching":
     if st.session_state.get("run_match"):
 
         try:
-            response = requests.get(
-                f"{API_URL}/match",
-                params={
-                    "id1": st.session_state["id1"],
-                    "id2": st.session_state["id2"]
-                }
-            )
+            with st.spinner("Processing..."):
+                response = requests.get(
+                    f"{API_URL}/match",
+                    params={"id1": st.session_state["id1"], "id2": st.session_state["id2"]}
+                )
 
             if response.status_code == 200:
                 data = response.json()
@@ -94,37 +106,30 @@ if menu == " UBID Matching":
                 explanation = data.get("explanation", {})
 
                 st.markdown('<div class="card">', unsafe_allow_html=True)
+
                 st.subheader("🔍 Matching Result")
-
                 st.metric("Confidence Score", f"{confidence:.2f}")
-                st.progress(int(confidence * 100))  # FIXED
+                st.progress(int(confidence * 100))
 
+                # Decision Badge
                 if decision == "AUTO-MERGE":
-                    st.success(f"Decision: {decision}")
+                    st.markdown('<span class="badge badge-success">AUTO-MERGE</span>', unsafe_allow_html=True)
                 elif decision == "REVIEW":
-                    st.warning(f"Decision: {decision}")
+                    st.markdown('<span class="badge badge-warning">REVIEW REQUIRED</span>', unsafe_allow_html=True)
                 else:
-                    st.error(f"Decision: {decision}")
+                    st.markdown('<span class="badge badge-danger">REJECTED</span>', unsafe_allow_html=True)
 
+                # UBID
                 if decision == "AUTO-MERGE":
                     ubid = f"UBID-{st.session_state['id1']}{st.session_state['id2']}{int(confidence*100)}"
-                    st.success(f" Generated UBID: {ubid}")
+                    st.success(f"Generated UBID: {ubid}")
 
                 st.divider()
 
                 st.markdown("### AI Explanation Breakdown")
 
-                colA, colB = st.columns(2)
-
-                for i, (key, value) in enumerate(explanation.items()):
-                    label = key.replace("_", " ").title()
-
-                    if i % 2 == 0:
-                        with colA:
-                            st.markdown(f"**{label}**: {value}")
-                    else:
-                        with colB:
-                            st.markdown(f"**{label}**: {value}")
+                for key, value in explanation.items():
+                    st.markdown(f"**{key.replace('_',' ').title()}**: {value}")
 
                 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -135,14 +140,13 @@ if menu == " UBID Matching":
             st.error("Backend not running")
             st.code(str(e))
 
-    if st.button(" Reset"):
+    if st.button("Reset"):
         st.session_state["run_match"] = False
-
 
 # ---------------------------
 # REVIEWER CONSOLE
 # ---------------------------
-elif menu == " Reviewer Console":
+elif menu == "Reviewer Console":
 
     st.markdown('<div class="section-title">Human Review & Decision Console</div>', unsafe_allow_html=True)
 
@@ -152,86 +156,61 @@ elif menu == " Reviewer Console":
         {"id": 203, "id1": 5, "id2": 6},
     ]
 
-    selected_case = st.selectbox(
-        " Select Case for Review",
-        [case["id"] for case in review_cases]
-    )
-
-    case_data = next(c for c in review_cases if c["id"] == selected_case)
+    selected_case = st.selectbox("Select Case", [c["id"] for c in review_cases])
+    case = next(c for c in review_cases if c["id"] == selected_case)
 
     try:
         response = requests.get(
             f"{API_URL}/match",
-            params={"id1": case_data["id1"], "id2": case_data["id2"]}
+            params={"id1": case["id1"], "id2": case["id2"]}
         )
 
         if response.status_code == 200:
             data = response.json()
 
-            confidence = data["confidence"]
-            decision = data["decision"]
-            explanation = data["explanation"]
+            st.markdown('<div class="card">', unsafe_allow_html=True)
 
             st.markdown("### Case Summary")
-
-            col1, col2, col3 = st.columns(3)
-            col1.metric("Record 1", case_data["id1"])
-            col2.metric("Record 2", case_data["id2"])
-            col3.metric("AI Confidence", f"{confidence:.2f}")
-
-            st.progress(int(confidence * 100))  
+            st.metric("Confidence", f"{data['confidence']:.2f}")
+            st.progress(int(data["confidence"] * 100))
 
             st.markdown("### Record Comparison")
 
             col1, col2 = st.columns(2)
-
             with col1:
-                st.json({"Name": "Ramesh Kumar", "Address": "Delhi", "Phone": "98XXXXXX12"})
+                st.markdown("**Record 1**")
+                st.write("Name: Ramesh Kumar")
+                st.write("City: Delhi")
 
             with col2:
-                st.json({"Name": "Ramesh K.", "Address": "New Delhi", "Phone": "98XXXXXX12"})
+                st.markdown("**Record 2**")
+                st.write("Name: Ramesh K.")
+                st.write("City: New Delhi")
 
             st.markdown("### AI Explanation")
+            for k, v in data["explanation"].items():
+                st.markdown(f"**{k.replace('_',' ').title()}**: {v}")
 
-            for key, value in explanation.items():
-                st.markdown(f"**{key.replace('_',' ').title()}**: {value}")
+            st.markdown("### Final Decision")
+            decision = st.radio("", ["Approve Merge", "Reject", "Escalate"])
+            comments = st.text_area("Comments")
 
-            st.markdown("### Reviewer Decision")
+            if st.button("Submit Decision"):
+                st.success("Decision submitted successfully")
 
-            final_decision = st.radio(
-                "Select Final Decision",
-                ["Approve Merge", "Reject Match", "Escalate"]
-            )
-
-            comments = st.text_area("Reviewer Comments")
-
-            if st.button(" Submit Decision"):
-                st.success("Decision submitted!")
-
-                st.json({
-                    "case_id": selected_case,
-                    "ai_decision": decision,
-                    "confidence": confidence,
-                    "final_decision": final_decision,
-                    "comments": comments
-                })
-
-        else:
-            st.error("API Error")
+            st.markdown('</div>', unsafe_allow_html=True)
 
     except Exception as e:
         st.error("Backend not running")
-        st.code(str(e))
-
 
 # ---------------------------
-# ACTIVITY STATUS (READY)
+# ACTIVITY STATUS
 # ---------------------------
-elif menu == " Activity Status":
+elif menu == "Activity Status":
 
     st.markdown('<div class="section-title">Business Activity Intelligence</div>', unsafe_allow_html=True)
 
-    record_id = st.number_input("Enter Business ID", min_value=1, value=1)
+    record_id = st.number_input("Enter Business ID", value=1)
 
     if st.button("Check Activity"):
         try:
@@ -247,29 +226,23 @@ elif menu == " Activity Status":
                 status = data.get("status", "Unknown")
 
                 if status == "Active":
-                    st.success(f"Status: {status}")
+                    st.success("Active")
                 elif status == "Dormant":
-                    st.warning(f"Status: {status}")
+                    st.warning("Dormant")
                 else:
-                    st.error(f"Status: {status}")
+                    st.error("Closed")
 
-                st.markdown("### Explanation")
                 st.info(data.get("explanation", ""))
 
                 st.markdown('</div>', unsafe_allow_html=True)
 
-            else:
-                st.error(f"API Error: {response.status_code}")
-
-        except Exception as e:
+        except:
             st.error("Backend not running")
-            st.code(str(e))
-
 
 # ---------------------------
-# QUERY ENGINE (READY)
+# QUERY ENGINE
 # ---------------------------
-elif menu == " Query Engine":
+elif menu == "Query Engine":
 
     st.markdown('<div class="section-title">Business Intelligence Query Engine</div>', unsafe_allow_html=True)
 
@@ -277,42 +250,31 @@ elif menu == " Query Engine":
 
     if st.button("Run Query"):
         try:
-            response = requests.get(
-                f"{API_URL}/query",
-                params={"pincode": pincode}
-            )
+            response = requests.get(f"{API_URL}/query", params={"pincode": pincode})
 
             if response.status_code == 200:
                 data = response.json()
-
                 results = data.get("results", [])
 
                 st.markdown('<div class="card">', unsafe_allow_html=True)
-                st.subheader("Query Results")
 
-                if len(results) == 0:
-                    st.info("No matching businesses found")
+                if not results:
+                    st.info("No businesses found")
                 else:
                     for r in results:
                         st.markdown(f"### {r['name']}")
 
-                        status = r.get("status", "Unknown")
-
-                        if status == "Active":
-                            st.success(f"Status: {status}")
-                        elif status == "Dormant":
-                            st.warning(f"Status: {status}")
+                        if r["status"] == "Active":
+                            st.success("Active")
+                        elif r["status"] == "Dormant":
+                            st.warning("Dormant")
                         else:
-                            st.error(f"Status: {status}")
+                            st.error("Closed")
 
-                        st.markdown(f"**Issue:** {r.get('issue', 'N/A')}")
+                        st.markdown(f"**Issue:** {r['issue']}")
                         st.divider()
 
                 st.markdown('</div>', unsafe_allow_html=True)
 
-            else:
-                st.error(f"API Error: {response.status_code}")
-
-        except Exception as e:
+        except:
             st.error("Backend not running")
-            st.code(str(e))
