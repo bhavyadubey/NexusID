@@ -1,20 +1,24 @@
-from fuzzywuzzy import fuzz
+def match_records(id1: int, id2: int):
 
-def compute_similarity(record1, record2):
-    name_score = fuzz.token_sort_ratio(record1['name'], record2['name']) / 100
-    address_score = fuzz.token_sort_ratio(record1['address'], record2['address']) / 100
-    
-    pan_match = 1 if record1['pan'] and record1['pan'] == record2['pan'] else 0
-    gstin_match = 1 if record1['gstin'] and record1['gstin'] == record2['gstin'] else 0
+    # Dummy logic
+    confidence = 0.87
 
-    confidence = (0.4 * name_score) + (0.3 * address_score) + (0.15 * pan_match) + (0.15 * gstin_match)
+    if confidence > 0.8:
+        decision = "AUTO-MERGE"
+    elif confidence > 0.5:
+        decision = "REVIEW"
+    else:
+        decision = "NO MATCH"
+
+    explanation = {
+        "name_match": "High",
+        "dob_match": "Exact",
+        "address_match": "Partial",
+        "phone_match": "Exact"
+    }
 
     return {
-        "confidence": round(confidence, 2),
-        "explanation": {
-            "name_similarity": name_score,
-            "address_similarity": address_score,
-            "pan_match": pan_match,
-            "gstin_match": gstin_match
-        }
+        "confidence": confidence,
+        "decision": decision,
+        "explanation": explanation
     }
