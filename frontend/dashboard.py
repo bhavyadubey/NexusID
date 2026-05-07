@@ -17,6 +17,7 @@ st.set_page_config(
 # ---------------------------
 st.markdown("""
 <style>
+
 body { background-color: #F4F6F9; }
 
 .main-title {
@@ -52,6 +53,19 @@ body { background-color: #F4F6F9; }
 .badge-success { background:#E8F8F0; color:#1E8449; }
 .badge-warning { background:#FEF5E7; color:#B9770E; }
 .badge-danger { background:#FDEDEC; color:#C0392B; }
+
+hr {
+    border: none !important;
+}
+
+.stProgress > div > div {
+    background-color: transparent;
+}
+
+.stProgress > div > div > div > div {
+    background-color: #1F77D0;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
