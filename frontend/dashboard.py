@@ -109,7 +109,8 @@ if menu == "UBID Matching":
 
                 st.subheader("🔍 Matching Result")
                 st.metric("Confidence Score", f"{confidence:.2f}")
-                st.progress(int(confidence * 100))
+                progress_value = min(max(float(confidence), 0.0), 1.0)
+                st.progress(progress_value)
 
                 # Decision Badge
                 if decision == "AUTO-MERGE":
@@ -172,7 +173,9 @@ elif menu == "Reviewer Console":
 
             st.markdown("### Case Summary")
             st.metric("Confidence", f"{data['confidence']:.2f}")
-            st.progress(int(data["confidence"] * 100))
+            
+            review_progress = min(max(float(data["confidence"]), 0.0), 1.0)
+            st.progress(review_progress)
 
             st.markdown("### Record Comparison")
 
