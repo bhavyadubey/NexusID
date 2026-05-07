@@ -1,37 +1,73 @@
-# NexusID - UBID & Business Activity Intelligence
+# 🏛️ NexusID – National Business Identity System
 
-## Overview
-NexusID is an AI-powered platform that generates a Unified Business Identifier (UBID) and classifies business activity.
+AI-powered Unified Business Identifier (UBID) & Business Activity Intelligence Platform.
 
-## Features
-- Entity matching with confidence scoring
-- Explainable AI decisions
-- Activity classification (Active/Dormant/Closed)
-- Query engine for insights
+NexusID is a governance-focused AI platform designed to solve duplicate business identity detection, business activity monitoring, and intelligent query analysis through explainable AI workflows.
 
-## Setup Instructions
+---
 
-### 1. Clone Repository
-git clone <repo_url>
-cd nexusid
+# 🚀 Features
 
-### 2. Install Dependencies
-pip install -r requirements.txt
+## 🔍 UBID Matching Engine
+- AI-powered entity matching
+- Confidence scoring
+- Explainable matching decisions
+- Automatic UBID generation
+- Human review workflow support
 
-### 3. Run Application
-cd backend
-uvicorn app:app --reload
+## 👨‍⚖️ Reviewer Console
+- Human-in-the-loop verification
+- Match review & escalation
+- Decision approval/rejection
+- Audit-style review interface
 
-### 4. Access API
-http://127.0.0.1:8000/docs
+## 📊 Activity Intelligence
+- Detects:
+  - Active businesses
+  - Dormant businesses
+  - Closed businesses
+- Provides AI-generated explanations
 
-## Demo Endpoints
+## 🧠 Query Engine
+- Business intelligence lookup by pincode
+- Issue identification
+- Regional activity insights
 
-### Match Records
-/match?id1=1&id2=2
+---
 
-### Activity Status
-/activity/1
+# 🏗️ Tech Stack
 
-### Query
-/query?pincode=560001
+| Layer | Technology |
+|---|---|
+| Frontend | Streamlit |
+| Backend | FastAPI |
+| AI Logic | Python |
+| API Hosting | Render |
+| Frontend Hosting | Streamlit Cloud |
+
+---
+
+# 📸 Application Screenshots
+
+## 🔍 UBID Matching
+![UBID Matching](UBID_Matching.png)
+
+---
+
+## 📊 Activity Status
+![Activity Status](Activity_status.png)
+
+---
+
+## 🧠 Query Engine
+![Query Engine](Query_Engine.png)
+
+---
+
+# ⚙️ Setup Instructions
+
+## 1️⃣ Clone Repository
+
+```bash
+git clone <your_repo_url>
+cd NexusID-main
