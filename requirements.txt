@@ -1,8 +1,8 @@
 fastapi
 uvicorn
-pandas
-scikit-learn
-fuzzywuzzy
-python-Levenshtein
 streamlit
 requests
+pandas
+numpy
+fuzzywuzzy
+python-Levenshtein
