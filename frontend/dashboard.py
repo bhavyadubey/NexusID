@@ -92,11 +92,13 @@ if menu == "UBID Matching":
     if st.session_state.get("run_match"):
 
         try:
-            with st.spinner("Processing..."):
-                response = requests.get(
-                    f"{API_URL}/match",
-                    params={"id1": st.session_state["id1"], "id2": st.session_state["id2"]}
-                )
+            response = requests.get(
+    f"{API_URL}/match",
+    params={
+        "id1": st.session_state["id1"],
+        "id2": st.session_state["id2"]
+    }
+)
 
             if response.status_code == 200:
                 data = response.json()
