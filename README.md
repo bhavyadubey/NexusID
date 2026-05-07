@@ -50,17 +50,17 @@ NexusID is a governance-focused AI platform designed to solve duplicate business
 # 📸 Application Screenshots
 
 ## 🔍 UBID Matching
-![UBID Matching](UBID_Matching.png)
+![UBID Matching](./UBID_Matching.png)
 
 ---
 
 ## 📊 Activity Status
-![Activity Status](Activity_status.png)
+![Activity Status](./Activity_status.png)
 
 ---
 
 ## 🧠 Query Engine
-![Query Engine](Query_Engine.png)
+![Query Engine](./Query_Engine.png)
 
 ---
 
