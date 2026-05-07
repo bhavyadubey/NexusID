@@ -4,38 +4,36 @@ AI-powered Unified Business Identifier (UBID) & Business Activity Intelligence P
 
 NexusID is a governance-focused AI platform designed to solve duplicate business identity detection, business activity monitoring, and intelligent query analysis through explainable AI workflows.
 
----
 
-# 🚀 Features
+# Features
 
-## 🔍 UBID Matching Engine
+## UBID Matching Engine
 - AI-powered entity matching
 - Confidence scoring
 - Explainable matching decisions
 - Automatic UBID generation
 - Human review workflow support
 
-## 👨‍⚖️ Reviewer Console
+## Reviewer Console
 - Human-in-the-loop verification
 - Match review & escalation
 - Decision approval/rejection
 - Audit-style review interface
 
-## 📊 Activity Intelligence
+## Activity Intelligence
 - Detects:
   - Active businesses
   - Dormant businesses
   - Closed businesses
 - Provides AI-generated explanations
 
-## 🧠 Query Engine
+## Query Engine
 - Business intelligence lookup by pincode
 - Issue identification
 - Regional activity insights
 
----
 
-# 🏗️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -45,28 +43,29 @@ NexusID is a governance-focused AI platform designed to solve duplicate business
 | API Hosting | Render |
 | Frontend Hosting | Streamlit Cloud |
 
----
 
-# 📸 Application Screenshots
+## Application Screenshots
+## UBID Matching
 
-## 🔍 UBID Matching
-![UBID Matching](./UBID_Matching.png)
+![UBID Matching](./UBID_Matching.PNG)
 
----
 
-## 📊 Activity Status
-![Activity Status](./Activity_status.png)
 
----
+## Activity Status
 
-## 🧠 Query Engine
-![Query Engine](./Query_Engine.png)
+![Activity Status](./Activity_status.PNG)
 
----
 
-# ⚙️ Setup Instructions
 
-## 1️⃣ Clone Repository
+## Query Engine
+
+![Query Engine](./Query_Engine.PNG)
+
+
+
+# Setup Instructions
+
+## Clone Repository
 
 ```bash
 git clone <your_repo_url>
