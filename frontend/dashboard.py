@@ -61,7 +61,7 @@ body { background-color: #F4F6F9; }
 st.markdown('<div class="main-title">🏛️ NexusID – National Business Identity System</div>', unsafe_allow_html=True)
 st.caption("AI-powered Unified Business Identifier & Activity Intelligence Platform")
 
-st.divider()
+#st.divider()
 
 # ---------------------------
 # SIDEBAR
@@ -125,7 +125,7 @@ if menu == "UBID Matching":
                     ubid = f"UBID-{st.session_state['id1']}{st.session_state['id2']}{int(confidence*100)}"
                     st.success(f"Generated UBID: {ubid}")
 
-                st.divider()
+                #st.divider()
 
                 st.markdown("### AI Explanation Breakdown")
 
@@ -275,7 +275,7 @@ elif menu == "Query Engine":
                             st.error("Closed")
 
                         st.markdown(f"**Issue:** {r['issue']}")
-                        st.divider()
+                        #st.divider()
 
                 st.markdown('</div>', unsafe_allow_html=True)
 
